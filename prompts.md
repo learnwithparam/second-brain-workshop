@@ -4,7 +4,7 @@ Paste one at a time into Claude Code, in this folder. Run `bun run reset` to sta
 
 ## 1. See what the brain holds
 ```text
-Read CLAUDE.md and brands/. Then list every note in the brain and tell me what it holds for each company.
+Read CLAUDE.md and brands/. Then list every note in the brain and tell me what it holds for each company. Change nothing yet.
 ```
 You should see: eight notes, split across three companies, with good and bad ratings.
 
