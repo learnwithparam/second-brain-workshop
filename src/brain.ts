@@ -1,5 +1,5 @@
-// The whole brain: five functions that work on Markdown files in vault/.
-// The CLI and the MCP server both call these, so they can never disagree.
+// The brain core: five functions that read and write Markdown files in vault/.
+// The command line tool and the MCP server both call these, so they always agree.
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -23,25 +23,25 @@ export type Entry = {
   body: string;
 };
 
-// Tests point BRAIN_DIR at a temp folder so they never touch your notes.
+// Tests set BRAIN_DIR to a temp folder, so they never change your real notes.
 const root = () => process.env.BRAIN_DIR ?? join(import.meta.dir, "..");
 const FOLDER: Record<EntryType, string> = { idea: "ideas", reference: "references", issue: "issues" };
 
-// The CLI and MCP both pass plain strings, so the core checks them. A bad company could otherwise write outside vault/.
+// The CLI and MCP pass plain text, so this checks each value. Without it, a bad company name could write outside vault/.
 function must<T extends string>(list: readonly T[], value: unknown, name: string): T {
   if (!list.includes(value as T)) throw new Error(`${name} must be one of: ${list.join(", ")}. You gave "${value}".`);
   return value as T;
 }
 
-// An id is the company plus the title in lowercase words, so a person can read it.
+// An id is the company name plus the title, in lowercase with dashes. You can read it easily.
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
 
-// Write one line to vault/log.md, so you can always see what the brain changed.
+// Add one line to vault/log.md for each change, so you can see what changed.
 function log(action: string, entry: string) {
   appendFileSync(join(root(), "vault", "log.md"), `- ${new Date().toISOString().slice(0, 16)} ${action} ${entry}\n`);
 }
 
-// A note is a block of "key: value" lines between two --- lines, then the body.
+// A note has a header between two --- lines, with one "key: value" line for each field. The text after the second --- is the body.
 function parse(text: string, path: string): Entry {
   const [, head = "", ...rest] = text.split(/^---\s*$/m);
   const field = (key: string) => head.match(new RegExp(`^${key}:\\s*(.*)$`, "m"))?.[1].trim().replace(/^"|"$/g, "") ?? "";
@@ -65,7 +65,7 @@ function render(e: Omit<Entry, "path">): string {
 
 export function search(filter: { company?: Company; type?: EntryType; rating?: Rating; query?: string } = {}): Entry[] {
   const found: Entry[] = [];
-  // Every word must appear somewhere in the note, in any order, so "mcp sign in" finds a note that says "sign in ... MCP".
+  // Every word must appear somewhere in the note, in any order. So "mcp sign in" finds a note that has "sign in" and "MCP" anywhere in it.
   const words = (filter.query ?? "").toLowerCase().split(/\s+/).filter(Boolean);
   for (const type of TYPES) {
     const dir = join(root(), "vault", FOLDER[type]);
@@ -84,13 +84,13 @@ export function search(filter: { company?: Company; type?: EntryType; rating?: R
   return found;
 }
 
-// The ids a note points to with [[id]]. These links are the edges of the graph.
+// The ids a note links to with [[id]]. Each link is one edge in the graph of notes.
 const linksOf = (e: Entry) => [...e.body.matchAll(/\[\[([^\]]+)\]\]/g)].map((m) => m[1]);
 
 export type Related = Entry & { distance: number; via: "links to" | "linked from" };
 
-// Walk the links outward from one note, like the graph view in Obsidian. A note is linked in either direction:
-// it points to another note, or another note points to it. depth 1 is the direct neighbours, depth 2 adds theirs.
+// Follow the links out from one note, like the graph view in Obsidian. A link counts in both directions: the note
+// links to another note, or another note links to it. Depth 1 is the direct neighbours. Depth 2 adds their neighbours.
 export function related(id: string, depth = 1, company?: Company): Related[] {
   if (company) must(COMPANIES, company, "company");
   const all = search();

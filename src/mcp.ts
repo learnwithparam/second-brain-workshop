@@ -1,4 +1,4 @@
-// The MCP door to the brain. Claude Desktop, Cursor or any MCP client can use it.
+// The MCP way in to the brain. Claude Desktop, Cursor and other MCP apps can use it.
 // It calls the same functions as the CLI. Run it with: bun run mcp
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -38,5 +38,5 @@ server.registerTool(
 
 server.registerTool("brain_remove", { description: "Delete a note by id", inputSchema: { id: z.string() } }, async ({ id }) => reply(remove(id)));
 
-// Only start listening when run as a program, so a test can import the server.
+// Start listening only when this file runs directly. A test can import the server without starting it.
 if (import.meta.main) await server.connect(new StdioServerTransport());

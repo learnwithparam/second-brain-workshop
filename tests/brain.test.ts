@@ -1,4 +1,4 @@
-// Tests run on a copy of the vault in a temp folder, so your notes are never touched.
+// Tests use a copy of vault/ in a temp folder, so your real notes are never changed.
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -78,7 +78,7 @@ test("the MCP server offers the same tools as the CLI", async () => {
   expect(JSON.stringify(result)).toContain("englishmaa-meeting-phrases");
 });
 
-// The command line door is run as a real program, so a renamed flag or a bad message fails here.
+// The command line tool runs here as a real program. A renamed flag or a changed message fails the test.
 const cli = (...args: string[]) => Bun.spawnSync(["bun", "run", join(import.meta.dir, "../src/cli.ts"), ...args], { env: { ...process.env, BRAIN_DIR: dir } });
 const text = (out: Uint8Array) => new TextDecoder().decode(out);
 

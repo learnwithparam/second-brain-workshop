@@ -1,5 +1,5 @@
-// Puts vault/ and inbox/ back to what the repo shipped, so you can run the demo again.
-// It uses git, so the seed notes are never copied into a second place.
+// Restores vault/ and inbox/ to the starting files, so you can run the demo again.
+// It uses git, so there is only one copy of the starting notes.
 import { $ } from "bun";
 
 await $`git checkout -- vault inbox`;

@@ -1,4 +1,4 @@
-// Reads every page a learner sees and fails when the words are too hard.
+// Checks every page a learner reads. Fails when the words are too hard.
 // The rules come from the teach repo's plain-english.mjs: grade 6, 25 words, no em dash.
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -10,7 +10,7 @@ const files = (path) => (statSync(path).isDirectory() ? readdirSync(path).flatMa
 let problems = 0;
 for (const file of PAGES.flatMap(files)) {
   if (file === "vault/log.md") continue;
-  // A note starts with a YAML header. It is data, not prose, so only the body is graded.
+  // A note starts with a header of data. Only the body after the header is graded as prose.
   const text = readFileSync(file, "utf-8").replace(/^---\n[\s\S]*?\n---\n/, "");
   const found = [...w1Grade(text), ...w2Sentences(text), ...w3Paragraphs(text), ...w5SimplerWords(text), ...w9EmDash(text), ...w10Expect(text), ...w11Links(text)];
   for (const message of found) console.log(`${file}: ${message}`), problems++;

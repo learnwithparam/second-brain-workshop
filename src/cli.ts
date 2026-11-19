@@ -1,5 +1,5 @@
-// The terminal door to the brain. Claude Code runs this with bash.
-// Every value has a name, so a command reads like a sentence:
+// The command line way in to the brain. Claude Code runs this with bash.
+// Each value has a name, so a command reads like a sentence:
 //   bun run cli search --company kaas --rating unrated
 import { parseArgs } from "node:util";
 import { add, related, remove, search, update, type Company, type EntryType, type Rating } from "./brain";
@@ -17,7 +17,7 @@ Companies: learnwithparam, kaas, englishmaa. Types: idea, reference, issue. Rati
 const [command, ...rest] = Bun.argv.slice(2);
 
 try {
-  // strict: false would hide a mistyped flag, so a typo stops with a message instead.
+  // An unknown flag stops the command with a message, so a typo is never ignored.
   const { values: v } = parseArgs({
     args: rest,
     options: {
@@ -26,7 +26,7 @@ try {
       id: { type: "string" }, note: { type: "string" }, depth: { type: "string" },
     },
   });
-  // A missing flag becomes a clear message, not a crash further down.
+  // A missing flag gives a clear message instead of a crash.
   const need = (name: keyof typeof v) => v[name] ?? (() => { throw new Error(`Missing --${name}.\n\n${USAGE}`); })();
 
   if (command === "search") {
@@ -46,7 +46,7 @@ try {
     console.log(USAGE);
   }
 } catch (error) {
-  // Say what went wrong and what to do, with no stack trace.
+  // Show the problem and the fix, without a stack trace.
   console.error((error as Error).message);
   process.exit(1);
 }
