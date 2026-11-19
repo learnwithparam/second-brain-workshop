@@ -44,6 +44,14 @@ test("add refuses a second note with the same id", async () => {
   expect(() => add(input)).toThrow("already exists");
 });
 
+test("add refuses a company or type that could escape vault/", async () => {
+  const { add } = await brain();
+  const note = { type: "idea" as const, rating: "good" as const, title: "x", reason: "r", tags: [], body: "b" };
+  expect(() => add({ ...note, company: "../../x" as never })).toThrow("company must be one of");
+  expect(() => add({ ...note, company: "kaas", type: "../../x" as never })).toThrow("type must be one of");
+  expect(existsSync(join(dir, "..", "x-x.md"))).toBe(false);
+});
+
 test("update changes the rating and keeps the body", async () => {
   const { update, search } = await brain();
   update("kaas-issue-case-study", { rating: "good", reason: "Worth a client story." });

@@ -27,6 +27,12 @@ export type Entry = {
 const root = () => process.env.BRAIN_DIR ?? join(import.meta.dir, "..");
 const FOLDER: Record<EntryType, string> = { idea: "ideas", reference: "references", issue: "issues" };
 
+// The CLI and MCP both pass plain strings, so the core checks them. A bad company could otherwise write outside vault/.
+function must<T extends string>(list: readonly T[], value: unknown, name: string): T {
+  if (!list.includes(value as T)) throw new Error(`${name} must be one of: ${list.join(", ")}. You gave "${value}".`);
+  return value as T;
+}
+
 // An id is the company plus the title in lowercase words, so a person can read it.
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
 
@@ -77,6 +83,9 @@ export function search(filter: { company?: Company; type?: EntryType; rating?: R
 }
 
 export function add(input: Omit<Entry, "id" | "path">): Entry {
+  must(COMPANIES, input.company, "company");
+  must(TYPES, input.type, "type");
+  must(RATINGS, input.rating, "rating");
   const id = `${input.company}-${slug(input.title)}`;
   const path = `vault/${FOLDER[input.type]}/${id}.md`;
   if (existsSync(join(root(), path))) throw new Error(`${path} already exists. Update it instead.`);
@@ -87,6 +96,7 @@ export function add(input: Omit<Entry, "id" | "path">): Entry {
 }
 
 export function update(id: string, change: { rating?: Rating; reason?: string; tags?: string[]; note?: string }): Entry {
+  if (change.rating) must(RATINGS, change.rating, "rating");
   const old = search().find((e) => e.id === id);
   if (!old) throw new Error(`No note with id "${id}". Run search to see the ids.`);
   const next = { ...old, ...(change.rating && { rating: change.rating }), ...(change.reason && { reason: change.reason }), ...(change.tags && { tags: change.tags }) };

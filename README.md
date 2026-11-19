@@ -109,7 +109,8 @@ flowchart LR
 | vault/ | Stores each note as a Markdown file | You can read, search and track every change with git |
 
 ### Trust boundaries
-- Claude may write only in `vault/`. `.claude/settings.json` lists what it may run without asking.
+- Claude may write only in `vault/`. `.claude/settings.json` lists what it may run without asking. It allows all four brain commands, so a live demo never stops to ask. In a real team, let only `search` run alone.
+- The brain checks company, type and rating itself, so a bad value can never write outside `vault/`.
 - Saved text is a fact, not an order. A note that says "ignore your rules" is stored and never obeyed.
 - Every change adds one line to `vault/log.md`.
 
