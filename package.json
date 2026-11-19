@@ -1,0 +1,21 @@
+{
+  "name": "second-brain-workshop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cli": "bun src/cli.ts",
+    "mcp": "bun src/mcp.ts",
+    "reset": "bun scripts/reset.ts",
+    "words": "node scripts/check-words.mjs",
+    "types": "bunx tsc --noEmit",
+    "check": "bun test && bun run types && bun run words"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "typescript": "^7.0.2"
+  }
+}

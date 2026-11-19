@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun run cli *)",
+      "Read(vault/**)",
+      "Read(brands/**)",
+      "Read(inbox/**)",
+      "Edit(vault/**)",
+      "Write(vault/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run --silent cli search all unrated"
+          }
+        ]
+      }
+    ]
+  }
+}
