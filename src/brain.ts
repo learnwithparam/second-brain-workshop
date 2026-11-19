@@ -1,4 +1,4 @@
-// The whole brain: four functions that work on Markdown files in vault/.
+// The whole brain: five functions that work on Markdown files in vault/.
 // The CLI and the MCP server both call these, so they can never disagree.
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -65,6 +65,8 @@ function render(e: Omit<Entry, "path">): string {
 
 export function search(filter: { company?: Company; type?: EntryType; rating?: Rating; query?: string } = {}): Entry[] {
   const found: Entry[] = [];
+  // Every word must appear somewhere in the note, in any order, so "mcp sign in" finds a note that says "sign in ... MCP".
+  const words = (filter.query ?? "").toLowerCase().split(/\s+/).filter(Boolean);
   for (const type of TYPES) {
     const dir = join(root(), "vault", FOLDER[type]);
     if (!existsSync(dir)) continue;
@@ -75,11 +77,41 @@ export function search(filter: { company?: Company; type?: EntryType; rating?: R
         (!filter.company || entry.company === filter.company) &&
         (!filter.type || entry.type === filter.type) &&
         (!filter.rating || entry.rating === filter.rating) &&
-        (!filter.query || text.toLowerCase().includes(filter.query.toLowerCase()));
+        words.every((w) => text.toLowerCase().includes(w));
       if (matches) found.push(entry);
     }
   }
   return found;
+}
+
+// The ids a note points to with [[id]]. These links are the edges of the graph.
+const linksOf = (e: Entry) => [...e.body.matchAll(/\[\[([^\]]+)\]\]/g)].map((m) => m[1]);
+
+export type Related = Entry & { distance: number; via: "links to" | "linked from" };
+
+// Walk the links outward from one note, like the graph view in Obsidian. A note is linked in either direction:
+// it points to another note, or another note points to it. depth 1 is the direct neighbours, depth 2 adds theirs.
+export function related(id: string, depth = 1, company?: Company): Related[] {
+  if (company) must(COMPANIES, company, "company");
+  const all = search();
+  if (!all.some((e) => e.id === id)) throw new Error(`No note with id "${id}". Run search to see the ids.`);
+  const out = new Map(all.map((e) => [e.id, new Set(linksOf(e))])); // id -> the ids it points to
+  const seen = new Map<string, Related>();
+  let edge = [id];
+  for (let distance = 1; distance <= Math.min(depth, 5) && edge.length; distance++) {
+    const next: string[] = [];
+    for (const from of edge) {
+      for (const e of all) {
+        const forward = out.get(from)!.has(e.id);
+        const backward = out.get(e.id)!.has(from);
+        if ((!forward && !backward) || e.id === id || seen.has(e.id) || (company && e.company !== company)) continue;
+        seen.set(e.id, { ...e, distance, via: forward ? "links to" : "linked from" });
+        next.push(e.id);
+      }
+    }
+    edge = next;
+  }
+  return [...seen.values()];
 }
 
 export function add(input: Omit<Entry, "id" | "path">): Entry {

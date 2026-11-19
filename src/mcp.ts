@@ -1,9 +1,9 @@
 // The MCP door to the brain. Claude Desktop, Cursor or any MCP client can use it.
-// It calls the same four functions as the CLI. Run it with: bun run mcp
+// It calls the same functions as the CLI. Run it with: bun run mcp
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { add, COMPANIES, RATINGS, remove, search, TYPES, update } from "./brain";
+import { add, COMPANIES, RATINGS, related, remove, search, TYPES, update } from "./brain";
 
 export const server = new McpServer({ name: "second-brain", version: "1.0.0" });
 
@@ -16,6 +16,12 @@ server.registerTool(
   "brain_search",
   { description: "Find notes by company, type, rating or a word", inputSchema: { company: company.optional(), type: type.optional(), rating: rating.optional(), query: z.string().optional() } },
   async (filter) => reply(search(filter)),
+);
+
+server.registerTool(
+  "brain_related",
+  { description: "Follow [[links]] from one note to the notes it links to and the notes that link to it. depth 2 goes one step further", inputSchema: { id: z.string(), depth: z.number().int().min(1).max(5).optional(), company: company.optional() } },
+  async ({ id, depth, company }) => reply(related(id, depth, company)),
 );
 
 server.registerTool(

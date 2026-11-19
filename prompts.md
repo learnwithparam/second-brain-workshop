@@ -36,9 +36,15 @@ You should see: the kaas issue rated and a new kaas issue, both listed in `vault
 ```bash
 claude mcp add second-brain -- bun run src/mcp.ts
 ```
-Expect: Claude Code lists `second-brain` with four tools. Add any research MCP server the same way.
+Expect: Claude Code lists `second-brain` with five tools, including `brain_related`. Add any research MCP server the same way.
 
 ```text
 Use the research skill for kaas. Find two recent ideas on checking agent work before release. Save only what passes brands/kaas.md.
 ```
 You should see: new reference notes, each with a source link, plus a list of what was dropped and why.
+
+## Bonus: follow the links
+```text
+Start from the kaas note about checking work before release. Follow its links two steps out, stay inside kaas, and tell me what else we already know that connects to it. Cite each file.
+```
+You should see: Claude runs the related command, reads the linked notes, and answers with file paths. It names no note from another company.

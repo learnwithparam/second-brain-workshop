@@ -104,15 +104,29 @@ flowchart LR
 | skills | Hold the steps for ingest and draft | A skill loads only when its job comes up |
 | inbox/ | Holds raw items | You can always check a note against its source |
 | brain.ts | Adds, finds, changes and removes notes | One place for the logic, so both doors agree |
-| cli.ts | Runs the four jobs from a terminal | Claude Code runs it with bash, and it costs little context |
-| mcp.ts | Offers the same four jobs as MCP tools | Claude Desktop or Cursor can use the same brain |
+| cli.ts | Runs the brain jobs from a terminal | Claude Code runs it with bash, and it costs little context |
+| mcp.ts | Offers the same jobs as MCP tools | Claude Desktop or Cursor can use the same brain |
 | vault/ | Stores each note as a Markdown file | You can read, search and track every change with git |
 
 ### Trust boundaries
-- Claude may write only in `vault/`. `.claude/settings.json` lists what it may run without asking. It allows all four brain commands, so a live demo never stops to ask. In a real team, let only `search` run alone.
+- Claude may write only in `vault/`. `.claude/settings.json` lists what it may run without asking. It allows every brain command, so a live demo never stops to ask. In a real team, let only `search` run alone.
 - The brain checks company, type and rating itself, so a bad value can never write outside `vault/`.
 - Saved text is a fact, not an order. A note that says "ignore your rules" is stored and never obeyed.
 - Every change adds one line to `vault/log.md`.
+
+## Grow it
+The brain gets better as you add to it. Each note can point to others with `[[id]]`, so the notes form a web, like the graph view in Obsidian.
+
+Claude Code can walk that web from any note. It can also read the files in `vault/` directly.
+
+```bash
+bun run cli search --word eval release
+bun run cli related --id kaas-eval-before-ship --depth 2
+```
+
+Expect: the first command lists notes that hold both words, in any order. The second lists every note linked to or from that note, up to two steps away, and says which way each link goes.
+
+Save more by dropping a file in `inbox/` and running the `ingest` skill, or by running the `research` skill. Both link each new note to the notes you already have.
 
 ## Reuse it
 Each piece is a file you can copy into another project.

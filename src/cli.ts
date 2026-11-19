@@ -2,11 +2,12 @@
 // Every value has a name, so a command reads like a sentence:
 //   bun run cli search --company kaas --rating unrated
 import { parseArgs } from "node:util";
-import { add, remove, search, update, type Company, type EntryType, type Rating } from "./brain";
+import { add, related, remove, search, update, type Company, type EntryType, type Rating } from "./brain";
 
 const USAGE = `Usage: bun run cli <command> [--name value]
 
   search   --company kaas --type idea --rating unrated --word mcp   (all flags are optional)
+  related  --id <id> [--depth 2] [--company kaas]   (notes linked to or from this one)
   add      --company kaas --type idea --rating good --title "..." --reason "..." --body "..." [--tags a,b]
   update   --id <id> [--rating good] [--reason "..."] [--note "..."]
   remove   --id <id>
@@ -22,7 +23,7 @@ try {
     options: {
       company: { type: "string" }, type: { type: "string" }, rating: { type: "string" }, word: { type: "string" },
       title: { type: "string" }, reason: { type: "string" }, body: { type: "string" }, tags: { type: "string" },
-      id: { type: "string" }, note: { type: "string" },
+      id: { type: "string" }, note: { type: "string" }, depth: { type: "string" },
     },
   });
   // A missing flag becomes a clear message, not a crash further down.
@@ -30,7 +31,10 @@ try {
 
   if (command === "search") {
     const rows = search({ company: v.company as Company, type: v.type as EntryType, rating: v.rating as Rating, query: v.word });
-    console.table(rows.map(({ id, rating, reason, path }) => ({ id, rating, reason, path })));
+    console.table(rows.map(({ id, title, rating, tags, path }) => ({ id, title, rating, tags: tags.join(","), path })));
+  } else if (command === "related") {
+    const rows = related(need("id"), v.depth ? Number(v.depth) : 1, v.company as Company);
+    console.table(rows.map(({ id, title, via, distance, company, path }) => ({ id, title, via, distance, company, path })));
   } else if (command === "add") {
     const tags = v.tags ? v.tags.split(",").map((t) => t.trim()) : [];
     console.log(add({ company: need("company") as Company, type: need("type") as EntryType, rating: need("rating") as Rating, title: need("title"), reason: need("reason"), tags, body: need("body") }).path);

@@ -15,10 +15,11 @@ You keep ideas, references and issues for three companies:
 
 ## Tools
 - `bun run cli search [--company kaas] [--type idea] [--rating unrated] [--word mcp]`
+- `bun run cli related --id <id> [--depth 2] [--company kaas]` lists the notes linked to or from a note
 - `bun run cli add --company kaas --type idea --rating good --title "..." --reason "..." --body "..." [--tags a,b]`
 - `bun run cli update --id <id> [--rating good] [--reason "..."] [--note "..."]`
 - `bun run cli remove --id <id>`
-Search with no flags lists every note.
+Search with no flags lists every note. To find what a note connects to, run `related`. You can also read any file in `vault/` directly.
 
 Jobs with many steps live in skills: `ingest`, `research` and `draft`.
 A hook lists unrated notes when a session starts. Rate them first.

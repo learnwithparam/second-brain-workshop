@@ -8,5 +8,5 @@ description: Use when the user asks to research a topic and keep the good parts.
 2. Find sources with the search tools you have. A connected MCP server, such as a research or social search server, counts. If none is connected, fetch the link the user gave.
 3. Keep a point only if it passes the Good list on the brand page. Drop the rest and say why.
 4. Save each kept point with `bun run cli add`, type `reference`. Put the source link in the body.
-5. Link each new note to a note we already have, using `[[id]]`.
+5. Find notes we already have with `bun run cli search --word <topic words>`. Link each new note to them with `[[id]]`, so the graph grows.
 6. Show a table: path, rating, reason. Then list what you dropped.
