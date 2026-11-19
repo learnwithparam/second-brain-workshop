@@ -1,26 +1,45 @@
 // The terminal door to the brain. Claude Code runs this with bash.
-// Usage: bun run cli <search|add|update|remove> ...
+// Every value has a name, so a command reads like a sentence:
+//   bun run cli search --company kaas --rating unrated
+import { parseArgs } from "node:util";
 import { add, remove, search, update, type Company, type EntryType, type Rating } from "./brain";
 
-const [command, ...args] = Bun.argv.slice(2);
-// "all" or a missing word means "do not filter on this".
-const pick = <T extends string>(word?: string) => (word && word !== "all" ? (word as T) : undefined);
+const USAGE = `Usage: bun run cli <command> [--name value]
+
+  search   --company kaas --type idea --rating unrated --word mcp   (all flags are optional)
+  add      --company kaas --type idea --rating good --title "..." --reason "..." --body "..." [--tags a,b]
+  update   --id <id> [--rating good] [--reason "..."] [--note "..."]
+  remove   --id <id>
+
+Companies: learnwithparam, kaas, englishmaa. Types: idea, reference, issue. Ratings: good, bad, unrated.`;
+
+const [command, ...rest] = Bun.argv.slice(2);
 
 try {
+  // strict: false would hide a mistyped flag, so a typo stops with a message instead.
+  const { values: v } = parseArgs({
+    args: rest,
+    options: {
+      company: { type: "string" }, type: { type: "string" }, rating: { type: "string" }, word: { type: "string" },
+      title: { type: "string" }, reason: { type: "string" }, body: { type: "string" }, tags: { type: "string" },
+      id: { type: "string" }, note: { type: "string" },
+    },
+  });
+  // A missing flag becomes a clear message, not a crash further down.
+  const need = (name: keyof typeof v) => v[name] ?? (() => { throw new Error(`Missing --${name}.\n\n${USAGE}`); })();
+
   if (command === "search") {
-    const [company, rating, query] = args;
-    const rows = search({ company: pick<Company>(company), rating: pick<Rating>(rating), query });
+    const rows = search({ company: v.company as Company, type: v.type as EntryType, rating: v.rating as Rating, query: v.word });
     console.table(rows.map(({ id, rating, reason, path }) => ({ id, rating, reason, path })));
   } else if (command === "add") {
-    const [company, type, rating, title, reason, body] = args;
-    console.log(add({ company: company as Company, type: type as EntryType, rating: rating as Rating, title, reason, tags: [], body }).path);
+    const tags = v.tags ? v.tags.split(",").map((t) => t.trim()) : [];
+    console.log(add({ company: need("company") as Company, type: need("type") as EntryType, rating: need("rating") as Rating, title: need("title"), reason: need("reason"), tags, body: need("body") }).path);
   } else if (command === "update") {
-    const [id, rating, reason, note] = args;
-    console.log(update(id, { rating: pick<Rating>(rating), reason, note }).path);
+    console.log(update(need("id"), { rating: v.rating as Rating, reason: v.reason, note: v.note }).path);
   } else if (command === "remove") {
-    console.log(`removed ${remove(args[0])}`);
+    console.log(`removed ${remove(need("id"))}`);
   } else {
-    console.log("Usage: bun run cli <search|add|update|remove>\n  search <company|all> <rating|all> [word]\n  add <company> <type> <rating> <title> <reason> <body>\n  update <id> <rating|all> [reason] [note]\n  remove <id>");
+    console.log(USAGE);
   }
 } catch (error) {
   // Say what went wrong and what to do, with no stack trace.

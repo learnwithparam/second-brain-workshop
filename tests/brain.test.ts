@@ -77,3 +77,25 @@ test("the MCP server offers the same four tools", async () => {
   const result = await client.callTool({ name: "brain_search", arguments: { company: "englishmaa", rating: "good" } });
   expect(JSON.stringify(result)).toContain("englishmaa-meeting-phrases");
 });
+
+// The command line door is run as a real program, so a renamed flag or a bad message fails here.
+const cli = (...args: string[]) => Bun.spawnSync(["bun", "run", join(import.meta.dir, "../src/cli.ts"), ...args], { env: { ...process.env, BRAIN_DIR: dir } });
+const text = (out: Uint8Array) => new TextDecoder().decode(out);
+
+test("the cli takes named flags and filters with them", () => {
+  const all = text(cli("search").stdout);
+  const kaas = text(cli("search", "--company", "kaas", "--rating", "unrated").stdout);
+  expect(kaas).toContain("kaas-issue-case-study");
+  expect(kaas).not.toContain("englishmaa-");
+  expect(all.length).toBeGreaterThan(kaas.length);
+});
+
+test("the cli adds a note from flags and says what is missing or mistyped", () => {
+  const ok = cli("add", "--company", "kaas", "--type", "idea", "--rating", "good", "--title", "Flag test", "--reason", "Test", "--body", "Body");
+  expect(ok.exitCode).toBe(0);
+  expect(existsSync(join(dir, "vault/ideas/kaas-flag-test.md"))).toBe(true);
+  const missing = cli("add", "--company", "kaas");
+  expect(missing.exitCode).toBe(1);
+  expect(text(missing.stderr)).toContain("Missing --type");
+  expect(cli("search", "--compny", "kaas").exitCode).toBe(1);
+});

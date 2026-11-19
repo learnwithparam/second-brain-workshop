@@ -27,7 +27,7 @@ Expect: `bun install` ends with a line that says packages installed.
 2. See what the brain holds.
 
 ```bash
-bun run cli search all all
+bun run cli search
 ```
 
 Expect: a table of eight notes, with the columns id, rating, reason and path.

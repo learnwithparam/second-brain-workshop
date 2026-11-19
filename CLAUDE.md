@@ -14,10 +14,11 @@ You keep ideas, references and issues for three companies:
 6. Never edit files in `inbox/`. They are the raw input.
 
 ## Tools
-- `bun run cli search <company|all> <rating|all> [word]`
-- `bun run cli add <company> <type> <rating> <title> <reason> <body>`
-- `bun run cli update <id> <rating|all> [reason] [note]`
-- `bun run cli remove <id>`
+- `bun run cli search [--company kaas] [--type idea] [--rating unrated] [--word mcp]`
+- `bun run cli add --company kaas --type idea --rating good --title "..." --reason "..." --body "..." [--tags a,b]`
+- `bun run cli update --id <id> [--rating good] [--reason "..."] [--note "..."]`
+- `bun run cli remove --id <id>`
+Search with no flags lists every note.
 
 Jobs with many steps live in skills: `ingest`, `research` and `draft`.
 A hook lists unrated notes when a session starts. Rate them first.

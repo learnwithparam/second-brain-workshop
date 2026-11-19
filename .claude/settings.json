@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bun run --silent cli search all unrated"
+            "command": "bun run --silent cli search --rating unrated"
           }
         ]
       }
