@@ -18,7 +18,7 @@ You should see: three new notes, and a log line for each. The line in the newsle
 ```text
 Research how remote MCP servers sign in users, using https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization. Keep only what passes the learnwithparam and kaas pages in brands/. Save each point as a reference note and link it to notes we already have.
 ```
-You should see: two or three new reference notes, each with a reason, and nothing saved that fails the brand pages.
+You should see: a handful of new reference notes, each with a reason, and a list of the points it dropped because they fail the brand pages. This step takes about two minutes.
 
 ## 4. Write from the brain
 ```text
@@ -30,7 +30,7 @@ You should see: a draft where every point has a path such as `[vault/ideas/learn
 ```text
 Find unrated notes. Rate the kaas issue and explain why. Remove any bad note that repeats another. Then add a kaas issue to turn our best reference into a client case study.
 ```
-You should see: an update, a removal and a new issue, all listed in `vault/log.md`.
+You should see: the kaas issue rated and a new kaas issue, both listed in `vault/log.md`. Nothing is removed unless two bad notes repeat each other, and the seed notes do not, so Claude says why it kept them.
 
 ## Bonus: connect another MCP and research with it
 ```bash
